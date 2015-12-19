@@ -11,12 +11,12 @@ Function: get_perspective_image()
             helps to get an image of arena
 '''
 def get_perspective_image(frame):
-    
+
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     lower = np.array([0, 0, 0]) #black color mask
     upper = np.array([120, 120, 120])
     mask = cv2.inRange(frame, lower, upper)
-    
+
     ret,thresh1 = cv2.threshold(mask,127,255,cv2.THRESH_BINARY)
     contours, hierarchy = cv2.findContours(thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     #cv2.drawContours(frame,contours,-1,(0,255,0),3)
@@ -28,7 +28,7 @@ def get_perspective_image(frame):
         area = cv2.contourArea(i)
         if area > 10000:
             peri = cv2.arcLength(i,True)
-        if area > max_area: 
+        if area > max_area:
             biggest = index1
             max_area = area
         index1 = index1 + 1
@@ -48,10 +48,10 @@ def get_perspective_image(frame):
     print x2, y2
     print x3, y3
     print x4, y4
-    
+
     #points remapped from source image from camera
     #to cropped image try to match x1, y1,.... to the respective near values
-    pts1 = np.float32([[x2,y2],[x4,y4],[x1,y1],[x3,y3]]) 
+    pts1 = np.float32([[x2,y2],[x4,y4],[x1,y1],[x3,y3]])
     pts2 = np.float32([[0,0],[0,480],[540,0],[540,480]])
     persM = cv2.getPerspectiveTransform(pts1,pts2)
     dst = cv2.warpPerspective(frame,persM,(540,480))
@@ -84,7 +84,7 @@ rows=5
 columns=5
 
 obstacles,supply_b,table_b,supply_r,table_r,supply_y,table_y,o,v = ([]for i in range(9))
-    
+
 class ArenaMap(object):
     '''
     Function: mask()
@@ -128,7 +128,7 @@ class ArenaMap(object):
                 flag =1
                 M = cv2.moments(contours[i])
                 cx = int(M['m10']/M['m00']) + w/5
-                cy = int(M['m01']/M['m00']) 
+                cy = int(M['m01']/M['m00'])
                 temp.append((cx,cy))
             elif area > 1000:
                 #provisions are detected
@@ -145,7 +145,7 @@ class ArenaMap(object):
                 flag =1
                 M = cv2.moments(contours[i])
                 cx = int(M['m10']/M['m00'])
-                cy = int(M['m01']/M['m00']) 
+                cy = int(M['m01']/M['m00'])
                 temp.append((cx,cy))
         if flag == 0:
             #print temp_s,temp_m
@@ -157,7 +157,7 @@ class ArenaMap(object):
     Function: grid_map()
     input: co-ordinates of obstacles, start and end positions
     output: matrix of 5x5 having 0 for path that can be followed; 1= obstacles; 2=start; 3=end;
-    Logic: comparing the co-orinate value and assigning that grid value accordingly
+    Logic: comparing the co-ordinate value and assigning that grid value accordingly
     '''
     def grid_map(self,obstacles,start,end):
         grid=np.zeros((rows,columns))
@@ -202,8 +202,8 @@ class ArenaMap(object):
             grid[2][2] = 2
         elif start[1]<480:
             grid[3][2] = 2
-         
-            
+
+
         if end[0]<100 and end[1]<160:
             grid[0][0] = 3
         elif end[0]<100 and end[1]<320:
@@ -221,10 +221,10 @@ class ArenaMap(object):
         elif end[1]<360:
             grid[2][2] = 3
         elif end[1]<480:
-            grid[3][2] = 3    
+            grid[3][2] = 3
         #assigning last row as obstacles to maintain 5x5 matrix
         grid[4][0]=grid[4][1]=grid[4][2]=grid[4][3]=grid[4][4]=1
-        return grid 
+        return grid
 
 '''
 Function: orientation()
@@ -255,7 +255,7 @@ output: none
 Logic: on comparision between current and desired orientation robot is turned 90 or 180 degree
 '''
 def orient_correct(current_orient,desired_orient,position):
-    #function to change the orientation of robot to desired orientation 
+    #function to change the orientation of robot to desired orientation
     global orient
     if current_orient == 'e' and desired_orient == 'w':
         ser.write("\x15")
@@ -299,7 +299,7 @@ def orient_correct(current_orient,desired_orient,position):
         #90 degree turn left
     time.sleep(3)
     orient = desired_orient
-        
+
 '''
 Function: send()
 input: index of grid matrix(current and next index)
@@ -469,7 +469,7 @@ def path_plan(obstacles,start,final):
     solution.init_grid(grid)
     path,length = solution.search()
     return path,length
-    
+
 class Cell(object):
     def __init__(self,x,y,reachable):
         #setting some parameters for each cell
@@ -497,9 +497,9 @@ class Astar(object):
         heapq.heapify(self.open)
         #list of already checked cells
         self.closed= set()
-        #list of neighbour cells 
+        #list of neighbour cells
         self.cells=[]
-  
+
     def init_grid(self,grid):
         for i in range(rows):
             for j in range(columns):
@@ -543,7 +543,7 @@ class Astar(object):
         adj.parent=cell
         adj.net_cost= adj.cost + adj.heuristic
 
-                        
+
     def display_path(self):
         #list for storing the path
         route_path =[]
@@ -569,7 +569,7 @@ class Astar(object):
                 route_path, route_length = self.display_path()
                 route_path.reverse()
                 break
-            #getting the adjoint cells 
+            #getting the adjoint cells
             neighbours=self.neighbour(cell)
             for path in neighbours:
                 if path.reachable and path not in self.closed:   #if cell is not an obstacle and has not been already checked
@@ -685,7 +685,7 @@ def play(img):
         path_tytb,length_tytb = path_plan(obstacles,table_y[0],table_b[0])
         path_tbty,length_tbty = path_plan(obstacles,table_b[0],table_y[0])
 
-        #finding the nearest provision om supply side from initial position of robot    
+        #finding the nearest provision om supply side from initial position of robot
         minlen=min(length_isb,length_isr,length_isy)
 
         if(minlen==length_isy):
@@ -740,10 +740,10 @@ def play(img):
 
                     #pick blue provision and deliver it
                     end = pick_up(end,path_trsb,length_trsb,'blue1')
-                    end = drop(end,path_sbtb,length_sbtb,'blue1')                    
+                    end = drop(end,path_sbtb,length_sbtb,'blue1')
 
         #in similar manner we can pick and deliver the provision on the basis of nearest provision available if all different provisions are asked at table side
-        
+
         elif(minlen==length_isr):
             if data3 == (3,3):
                 if orient == 'e' or orient == 'w':
@@ -785,7 +785,7 @@ def play(img):
                     end = drop(end,path_trty,length_trty,'yellow2')
 
                     end = pick_up(end,path_tysb,length_tysb,'blue1')
-                    end = drop(end,path_sbtb,length_sbtb,'blue1')                 
+                    end = drop(end,path_sbtb,length_sbtb,'blue1')
         elif(minlen==length_isb):
             if data3 == (3,3):
                 if orient == 'e' or orient == 'w':
@@ -897,7 +897,7 @@ def play(img):
 
             #### in similar way we can pick and deliver the required provisions if a provision is asked for twice and other provision for once
 
-                    
+
             elif freqz_y == 1:
                 path_isy,length_isy = path_plan(obstacles,initial,supply_y[0])
                 path_isr,length_isr = path_plan(obstacles,initial,supply_r[0])
@@ -1175,7 +1175,7 @@ def play(img):
             path_3,length_3 = path_plan(obstacles,supply_b[0],table_b[2])
             length_min = min(length_1,length_2,length_3)
             if length_min == length_1:
-    
+
                 end = drop(end,path_1,length_1,'blue2')
                 path,length = path_plan(obstacles,table_b[0],table_b[1])
                 end = drop(end,path,length,'blue1')
@@ -1202,7 +1202,7 @@ def play(img):
 
         ### in similar way we can deliver the provision if a single provision is asked thrice
 
-        
+
         elif freqz_max == freqz_y:
             path_y,length_y = path_plan(obstacles,initial,supply_y[0])
             end = pick_up(initial,path_y,length_y,'yellow1')
@@ -1271,7 +1271,7 @@ def play(img):
         #buzzer
 
 if __name__ == "__main__":
-    
+
     cap = cv2.VideoCapture(1)
     ret, src = cap.read()
     cv2.imshow('src', src)
@@ -1283,12 +1283,12 @@ if __name__ == "__main__":
     cv2.imwrite("output_image.jpg", img_src)
 
     cv2.imshow('dst', img_src)
-    
+
     img = img_src
-    img = cv2.medianBlur(img,5) 
+    img = cv2.medianBlur(img,5)
     h, w, c=img.shape
     play(img)
-    
+
 cv2.waitKey(0)
 cap.release()
 cv2.destroyAllWindows()
