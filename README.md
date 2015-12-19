@@ -1,1 +1,1 @@
-This project is a part of e-yantra+ Robotics Competition (eYRC+), a unique annual competition for undergraduate students in science and engineering colleges organised by IIT Bombay. You can find more details about it on my [website](http://ishankgulati.github.io/).
+This project is a part of e-yantra+ Robotics Competition (eYRC+), a unique annual competition for undergraduate students in science and engineering colleges organised by IIT Bombay. You can find more details about it on my [website](http://ishankgulati.github.io/posts/Caretaker%20Robot/).
